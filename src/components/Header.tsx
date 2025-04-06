@@ -72,12 +72,12 @@ const Header = () => {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid gap-3 p-4 w-[400px]">
-                    <div className="p-3 hover:bg-remedy-50 rounded-md">
-                      <h4 className="text-sm font-medium text-remedy-800">AI Recommendations</h4>
+                    <Link to="/formula-library" className="p-3 hover:bg-remedy-50 rounded-md">
+                      <h4 className="text-sm font-medium text-remedy-800">AI Chatbot Assistant</h4>
                       <p className="text-xs text-muted-foreground">
-                        Personalized formula suggestions based on your health needs
+                        Chat with our AI to get personalized formula recommendations
                       </p>
-                    </div>
+                    </Link>
                     <div className="p-3 hover:bg-remedy-50 rounded-md">
                       <h4 className="text-sm font-medium text-remedy-800">Formula Categories</h4>
                       <p className="text-xs text-muted-foreground">
@@ -123,9 +123,9 @@ const Header = () => {
         <div className="md:hidden bg-white border-t border-health-100 py-4">
           <nav className="container mx-auto px-4">
             <ul className="space-y-4">
-              <li><a href="#" className="block text-health-800 hover:text-health-600 font-medium py-2">Dashboard</a></li>
+              <li><Link to="/" className="block text-health-800 hover:text-health-600 font-medium py-2">Dashboard</Link></li>
               <li><a href="#" className="block text-health-800 hover:text-health-600 font-medium py-2">Disease Analysis</a></li>
-              <li><a href="#" className="block text-health-800 hover:text-health-600 font-medium py-2">Formula Library</a></li>
+              <li><Link to="/formula-library" className="block text-health-800 hover:text-health-600 font-medium py-2">Formula Library</Link></li>
               <li><a href="#" className="block text-health-800 hover:text-health-600 font-medium py-2">Health Trends</a></li>
             </ul>
             <div className="mt-4">

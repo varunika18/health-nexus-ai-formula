@@ -5,12 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { sampleChat } from "@/lib/mockData";
 import { MessageSquare, Send } from 'lucide-react';
-
-interface ChatMessage {
-  id: number;
-  role: 'user' | 'ai';
-  content: string;
-}
+import { ChatMessage } from '@/types/chat';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(sampleChat);
@@ -21,9 +16,9 @@ const ChatInterface = () => {
     if (!inputMessage.trim()) return;
     
     // Add user message
-    const newUserMessage = {
+    const newUserMessage: ChatMessage = {
       id: messages.length + 1,
-      role: 'user' as const,
+      role: 'user',
       content: inputMessage
     };
     
@@ -35,9 +30,9 @@ const ChatInterface = () => {
     
     // Simulate AI response after a delay
     setTimeout(() => {
-      const aiResponse = {
+      const aiResponse: ChatMessage = {
         id: messages.length + 2,
-        role: 'ai' as const,
+        role: 'ai',
         content: "Based on the symptoms you've described, I can provide information about potential causes and natural approaches. Would you like me to analyze these symptoms in more detail or suggest a formula that might help?"
       };
       
