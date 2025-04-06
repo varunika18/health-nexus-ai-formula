@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lightbulb, BookOpen } from 'lucide-react';
+import { Lightbulb, BookOpen, ArrowRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface FormulaProps {
   name: string;
@@ -21,7 +22,7 @@ const FormulaRecommendation = ({
   researchBasis 
 }: FormulaProps) => {
   return (
-    <Card className="formula-card overflow-hidden">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-remedy-200 bg-gradient-to-br from-white to-remedy-50">
       <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
         <div className="bg-gradient-to-br from-remedy-300 to-transparent rounded-full w-full h-full transform translate-x-1/3 -translate-y-1/3" />
       </div>
@@ -34,8 +35,8 @@ const FormulaRecommendation = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="relative z-10">
-        <div className="mb-4">
+      <CardContent className="relative z-10 space-y-4">
+        <div>
           <div className="flex justify-between items-center mb-1">
             <h4 className="text-xs uppercase font-semibold text-remedy-700">AI Formula Effectiveness Rating</h4>
             <span className="font-semibold text-sm text-remedy-800">{effectiveness}%</span>
@@ -66,6 +67,10 @@ const FormulaRecommendation = ({
             </div>
           </div>
         </div>
+        
+        <Button variant="ghost" size="sm" className="text-remedy-600 hover:text-remedy-800 hover:bg-remedy-100 w-full mt-2 flex items-center justify-center gap-1">
+          Learn More <ArrowRight className="h-3 w-3" />
+        </Button>
       </CardContent>
     </Card>
   );

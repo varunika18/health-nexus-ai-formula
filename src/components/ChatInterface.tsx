@@ -1,19 +1,20 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { sampleChat } from "@/lib/mockData";
 import { MessageSquare, Send, Pill, Stethoscope } from 'lucide-react';
 import { ChatMessage, ChatRole } from '@/types/chat';
 import { formulas } from '@/lib/mockData';
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(sampleChat);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Auto-scroll to the bottom of the chat
   useEffect(() => {
@@ -113,18 +114,24 @@ const ChatInterface = () => {
       
       setMessages(prev => [...prev, aiResponseMessage]);
       setIsTyping(false);
+      
+      // Show toast notification
+      toast({
+        title: "Analysis Complete",
+        description: "Our AI has analyzed your symptoms and provided recommendations.",
+      });
     }, 1500);
   };
 
   return (
-    <Card className="border-health-100 shadow-lg overflow-hidden">
+    <Card className="border-health-100 shadow-lg overflow-hidden rounded-xl">
       <CardContent className="p-0">
-        <div className="bg-health-50 p-3 flex items-center gap-2 border-b border-health-100">
-          <Stethoscope className="h-5 w-5 text-health-600" />
-          <h3 className="font-medium text-health-800">AI Health Assistant</h3>
+        <div className="bg-gradient-to-r from-health-600 to-remedy-500 p-4 flex items-center gap-2 border-b border-health-100">
+          <Stethoscope className="h-5 w-5 text-white" />
+          <h3 className="font-medium text-white">AI Health Assistant</h3>
         </div>
         
-        <div className="h-[400px] overflow-y-auto p-4 space-y-4 bg-white">
+        <div className="h-[400px] overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-white to-health-50">
           {messages.map((message) => (
             <div 
               key={message.id} 
@@ -135,8 +142,8 @@ const ChatInterface = () => {
                 <div 
                   className={`p-3 rounded-lg ${
                     message.role === 'user' 
-                      ? 'bg-health-100 text-health-800 ml-auto' 
-                      : 'bg-remedy-50 text-remedy-800 border border-remedy-100'
+                      ? 'bg-health-100 text-health-800 ml-auto shadow-sm' 
+                      : 'bg-remedy-50 text-remedy-800 border border-remedy-100 shadow-sm'
                   }`}
                   style={{ 
                     maxWidth: '85%',
@@ -153,7 +160,7 @@ const ChatInterface = () => {
             <div className="chat-bubble ai-message">
               <div className="flex items-start gap-2">
                 <Pill className="h-4 w-4 mt-1 text-remedy-500" />
-                <div className="p-3 rounded-lg bg-remedy-50 text-remedy-800 border border-remedy-100 flex space-x-2 items-center">
+                <div className="p-3 rounded-lg bg-remedy-50 text-remedy-800 border border-remedy-100 flex space-x-2 items-center shadow-sm">
                   <div className="w-2 h-2 bg-remedy-300 rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-remedy-400 rounded-full animate-pulse delay-100"></div>
                   <div className="w-2 h-2 bg-remedy-500 rounded-full animate-pulse delay-200"></div>
@@ -176,7 +183,7 @@ const ChatInterface = () => {
                   handleSendMessage();
                 }
               }}
-              className="border-health-200 focus:ring-health-500 min-h-[80px] resize-none"
+              className="border-health-200 focus:ring-health-500 min-h-[80px] resize-none rounded-lg"
             />
             <div className="flex justify-between items-center">
               <p className="text-xs text-muted-foreground">
@@ -184,7 +191,7 @@ const ChatInterface = () => {
               </p>
               <Button 
                 onClick={handleSendMessage}
-                className="bg-health-600 hover:bg-health-700 flex items-center gap-2"
+                className="bg-gradient-to-r from-health-600 to-remedy-500 hover:from-health-700 hover:to-remedy-600 flex items-center gap-2 rounded-full transition-all shadow-md"
               >
                 <Send className="h-4 w-4" />
                 <span>Send</span>
