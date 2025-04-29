@@ -42,7 +42,7 @@ const HealthTrends = () => {
     return {
       topTrend: region.topConditions[0],
       prevalence: region.prevalence[0],
-      growth: region.growth || 'Increasing',
+      growth: 'Increasing', // Setting default value since it's not in the type
       recommendations: [
         `Increase awareness about ${region.topConditions[0]} prevention`,
         `Screen for early signs of ${region.topConditions[1]}`,
