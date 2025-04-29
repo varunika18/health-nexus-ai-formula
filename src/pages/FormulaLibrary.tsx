@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatInterface from "@/components/ChatInterface";
@@ -7,8 +7,10 @@ import FormulaRecommendation from "@/components/FormulaRecommendation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, Lightbulb, BookOpen, Beaker, ArrowRight } from 'lucide-react';
-import { formulas } from '@/lib/mockData';
+import { Search, Filter, Lightbulb, BookOpen, Beaker, ArrowRight, Database, Microscope, Book } from 'lucide-react';
+import { formulas, diseases } from '@/lib/mockData';
+import { useToast } from "@/hooks/use-toast";
+import { DiseaseAnalysis } from "@/components/DiseaseAnalysis";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,24 +20,75 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ResearchDatabaseSection } from "@/components/ResearchDatabaseSection";
+import { CategoriesFilter } from "@/components/CategoriesFilter";
 
 const FormulaLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [activeDisease, setActiveDisease] = useState<number | null>(null);
+  const { toast } = useToast();
   
-  const categories = [...new Set(formulas.map(formula => formula.description.split(' ')[0]))];
+  const categories = useMemo(() => {
+    return [...new Set(formulas.map(formula => formula.description.split(' ')[0]))];
+  }, []);
   
-  const filteredFormulas = formulas.filter(formula => {
-    const matchesSearch = searchTerm === '' || 
-      formula.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      formula.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesCategory = categoryFilter === null || 
-      formula.description.startsWith(categoryFilter);
-      
-    return matchesSearch && matchesCategory;
-  });
+  const filteredFormulas = useMemo(() => {
+    return formulas.filter(formula => {
+      const matchesSearch = searchTerm === '' || 
+        formula.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        formula.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        formula.components.some(component => 
+          component.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+      const matchesCategory = categoryFilter === null || 
+        formula.description.startsWith(categoryFilter);
+        
+      const matchesDisease = activeDisease === null ||
+        formula.diseaseId === activeDisease;
+        
+      return matchesSearch && matchesCategory && matchesDisease;
+    });
+  }, [searchTerm, categoryFilter, activeDisease]);
+  
+  const handleCategorySelect = (category: string | null) => {
+    setCategoryFilter(category);
+    if (category) {
+      toast({
+        title: "Category Selected",
+        description: `Showing formulas for ${category}`,
+        duration: 2000,
+      });
+    }
+  };
+  
+  const handleDiseaseSelect = (diseaseId: number | null) => {
+    setActiveDisease(diseaseId);
+    if (diseaseId !== null) {
+      const disease = diseases.find(d => d.id === diseaseId);
+      if (disease) {
+        toast({
+          title: "Disease Selected",
+          description: `Showing formulas related to ${disease.name}`,
+          duration: 2000,
+        });
+      }
+    }
+  };
+  
+  const resetFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter(null);
+    setActiveDisease(null);
+    toast({
+      title: "Filters Reset",
+      description: "Showing all available formulas",
+      duration: 2000,
+    });
+  };
   
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-health-50">
@@ -60,10 +113,10 @@ const FormulaLibrary = () => {
                 Discover natural formulas based on AI analysis and cutting-edge research. Chat with our AI assistant to find personalized recommendations.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button className="bg-health-600 hover:bg-health-700 rounded-full px-6">
+                <Button className="bg-health-600 hover:bg-health-700 rounded-full px-6 animate-fade-in">
                   Explore Formulas <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="border-remedy-300 text-remedy-700 hover:bg-remedy-50 rounded-full px-6">
+                <Button variant="outline" className="border-remedy-300 text-remedy-700 hover:bg-remedy-50 rounded-full px-6 animate-fade-in">
                   Learn More <BookOpen className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -74,72 +127,121 @@ const FormulaLibrary = () => {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="formulas" className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto mb-8 grid-cols-2 bg-gradient-to-r from-health-100 to-remedy-100 p-1 rounded-full">
-                <TabsTrigger value="formulas" className="rounded-full data-[state=active]:bg-white">Formula Database</TabsTrigger>
-                <TabsTrigger value="chat" className="rounded-full data-[state=active]:bg-white">AI Formula Assistant</TabsTrigger>
+              <TabsList className="grid w-full max-w-md mx-auto mb-8 grid-cols-3 bg-gradient-to-r from-health-100 to-remedy-100 p-1 rounded-full">
+                <TabsTrigger value="formulas" className="rounded-full data-[state=active]:bg-white">
+                  Formula Database
+                </TabsTrigger>
+                <TabsTrigger value="research" className="rounded-full data-[state=active]:bg-white">
+                  Research Database
+                </TabsTrigger>
+                <TabsTrigger value="chat" className="rounded-full data-[state=active]:bg-white">
+                  AI Assistant
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="formulas" className="space-y-8 animate-fade-in">
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                  <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search formulas..." 
-                      className="pl-10 border-remedy-200 rounded-full"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex flex-col md:flex-row gap-4 items-start">
+                  <div className="w-full md:w-1/4 space-y-4">
+                    <Card className="border-remedy-200 shadow-sm">
+                      <CardHeader className="pb-2 border-b border-remedy-100">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Filter className="h-5 w-5 text-remedy-500" />
+                          Formula Categories
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <CategoriesFilter 
+                          categories={categories} 
+                          activeCategory={categoryFilter} 
+                          onSelectCategory={handleCategorySelect}
+                        />
+                        
+                        <div className="mt-6 space-y-4">
+                          <h3 className="text-sm font-medium text-remedy-700">Related Conditions</h3>
+                          <div className="space-y-2">
+                            {diseases.map(disease => (
+                              <div 
+                                key={disease.id} 
+                                onClick={() => handleDiseaseSelect(disease.id === activeDisease ? null : disease.id)}
+                                className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
+                                  disease.id === activeDisease 
+                                    ? 'bg-health-100 text-health-800' 
+                                    : 'hover:bg-gray-50'
+                                }`}
+                              >
+                                <Microscope className="h-4 w-4 text-health-500" />
+                                <span className="text-sm">{disease.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {(searchTerm || categoryFilter || activeDisease) && (
+                          <Button 
+                            variant="ghost" 
+                            onClick={resetFilters} 
+                            className="w-full mt-4 text-sm text-muted-foreground"
+                          >
+                            Reset All Filters
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
                   
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2 rounded-full">
-                        <Filter className="h-4 w-4" /> 
-                        {categoryFilter ? `Category: ${categoryFilter}` : 'Filter by Category'}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 rounded-lg border-remedy-200 shadow-md">
-                      <DropdownMenuLabel>Select Category</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={() => setCategoryFilter(null)}>
-                          All Categories
-                        </DropdownMenuItem>
-                        {categories.map((category) => (
-                          <DropdownMenuItem 
-                            key={category} 
-                            onClick={() => setCategoryFilter(category)}
-                          >
-                            {category}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredFormulas.length > 0 ? (
-                    filteredFormulas.map((formula) => (
-                      <FormulaRecommendation
-                        key={formula.id}
-                        name={formula.name}
-                        components={formula.components}
-                        description={formula.description}
-                        effectiveness={formula.effectiveness}
-                        researchBasis={formula.researchBasis}
+                  <div className="w-full md:w-3/4 space-y-6">
+                    <div className="relative w-full">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Input 
+                        placeholder="Search formulas by name, description or components..." 
+                        className="pl-10 border-remedy-200 rounded-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-12">
-                      <Lightbulb className="h-12 w-12 text-remedy-300 mx-auto mb-4" />
-                      <h3 className="text-xl font-medium text-remedy-700 mb-2">No formulas found</h3>
-                      <p className="text-muted-foreground">
-                        Try adjusting your search or filters to find more results.
-                      </p>
                     </div>
-                  )}
+                    
+                    {activeDisease && (
+                      <div className="animate-scale-in">
+                        {diseases.filter(disease => disease.id === activeDisease).map(disease => (
+                          <DiseaseAnalysis 
+                            key={disease.id}
+                            diseaseName={disease.name}
+                            symptoms={disease.symptoms}
+                            causes={disease.causes}
+                            confidence={85}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {filteredFormulas.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {filteredFormulas.map((formula) => (
+                          <FormulaRecommendation
+                            key={formula.id}
+                            name={formula.name}
+                            components={formula.components}
+                            description={formula.description}
+                            effectiveness={formula.effectiveness}
+                            researchBasis={formula.researchBasis}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Lightbulb className="h-12 w-12 text-remedy-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-medium text-remedy-700 mb-2">No formulas found</h3>
+                        <p className="text-muted-foreground">
+                          Try adjusting your search or filters to find more results.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </TabsContent>
+              
+              <TabsContent value="research" className="animate-fade-in">
+                <ResearchDatabaseSection />
               </TabsContent>
               
               <TabsContent value="chat" className="pt-4 animate-fade-in">
