@@ -3,11 +3,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { sampleChat } from "@/lib/mockData";
-import { MessageSquare, Send, Pill, Stethoscope } from 'lucide-react';
+import { MessageSquare, Send, Pill, Stethoscope, BrainCircuit } from 'lucide-react';
 import { ChatMessage, ChatRole } from '@/types/chat';
-import { formulas } from '@/lib/mockData';
+import { formulas, diseases } from '@/lib/mockData';
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { DiseaseAnalysis } from "@/components/DiseaseAnalysis";
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(
@@ -19,6 +20,7 @@ const ChatInterface = () => {
   );
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [detectedDiseases, setDetectedDiseases] = useState<number[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -29,80 +31,79 @@ const ChatInterface = () => {
     }
   }, [messages]);
 
-  // Function to analyze symptoms and suggest remedies
-  const analyzeSymptoms = (symptomText: string): string => {
+  // Function to analyze symptoms and suggest remedies with improved accuracy
+  const analyzeSymptoms = (symptomText: string): { response: string; detectedDiseaseIds: number[] } => {
     // Convert input to lowercase for case-insensitive matching
     const lowerCaseSymptoms = symptomText.toLowerCase();
     
-    // Check for common symptoms and map them to possible conditions
-    let possibleConditions = [];
+    // Check for common symptoms and map them to possible conditions with confidence scores
+    let possibleConditions: { condition: string; confidence: number; diseaseId: number }[] = [];
     
-    if (lowerCaseSymptoms.includes('headache') || 
-        lowerCaseSymptoms.includes('dizzy') || 
-        lowerCaseSymptoms.includes('nosebleed')) {
-      possibleConditions.push('hypertension');
-    }
+    // Check symptoms against each disease in our database
+    diseases.forEach(disease => {
+      let matchCount = 0;
+      let totalSymptoms = disease.symptoms.length;
+      
+      disease.symptoms.forEach(symptom => {
+        if (lowerCaseSymptoms.includes(symptom.toLowerCase())) {
+          matchCount++;
+        }
+      });
+      
+      // Calculate a confidence score - more matching symptoms = higher confidence
+      if (matchCount > 0) {
+        const confidenceScore = Math.min(100, Math.round((matchCount / totalSymptoms) * 100));
+        
+        possibleConditions.push({
+          condition: disease.name,
+          confidence: confidenceScore,
+          diseaseId: disease.id
+        });
+      }
+    });
     
-    if (lowerCaseSymptoms.includes('thirst') || 
-        lowerCaseSymptoms.includes('urination') || 
-        lowerCaseSymptoms.includes('hunger') ||
-        lowerCaseSymptoms.includes('weight loss') ||
-        lowerCaseSymptoms.includes('fatigue')) {
-      possibleConditions.push('diabetes');
-    }
-    
-    if (lowerCaseSymptoms.includes('cough') || 
-        lowerCaseSymptoms.includes('sore throat') || 
-        lowerCaseSymptoms.includes('runny nose') ||
-        lowerCaseSymptoms.includes('fever') ||
-        lowerCaseSymptoms.includes('aches')) {
-      possibleConditions.push('respiratory infection');
-    }
-    
-    if (lowerCaseSymptoms.includes('joint pain') ||
-        lowerCaseSymptoms.includes('stiffness') ||
-        lowerCaseSymptoms.includes('swelling') ||
-        lowerCaseSymptoms.includes('inflammation')) {
-      possibleConditions.push('arthritis');
-    }
-    
-    if (lowerCaseSymptoms.includes('acid reflux') ||
-        lowerCaseSymptoms.includes('heartburn') ||
-        lowerCaseSymptoms.includes('indigestion') ||
-        lowerCaseSymptoms.includes('stomach pain')) {
-      possibleConditions.push('gastric issues');
-    }
+    // Sort by confidence score (highest first)
+    possibleConditions.sort((a, b) => b.confidence - a.confidence);
     
     // If no conditions matched, provide a general response
     if (possibleConditions.length === 0) {
-      return `Based on the symptoms you've described, I don't have enough information to suggest a specific formula. Could you provide more details about what you're experiencing? Include information like duration, severity, and any other symptoms.`;
+      return { 
+        response: `Based on the symptoms you've described, I don't have enough information to suggest a specific formula. Could you provide more details about what you're experiencing? Include information like duration, severity, and any other symptoms.`,
+        detectedDiseaseIds: []
+      };
     }
     
-    // Find matching formulas
+    // Get the disease IDs for detected conditions
+    const detectedDiseaseIds = possibleConditions.map(condition => condition.diseaseId);
+    
+    // Find matching formulas for top conditions
+    const topCondition = possibleConditions[0];
     const matchingFormulas = formulas.filter(formula => 
-      possibleConditions.some(condition => 
-        formula.description.toLowerCase().includes(condition)
-      )
+      formula.diseaseId === topCondition.diseaseId
     );
     
     // Construct response with matched formulas
-    let response = `Based on the symptoms you've described, you may be experiencing ${possibleConditions.join(' or ')}. `;
+    let response = `Based on your symptoms, there's a ${topCondition.confidence}% likelihood you may be experiencing **${topCondition.condition}**.\n\n`;
+    
+    if (possibleConditions.length > 1) {
+      response += `I've also detected possible signs of ${possibleConditions.slice(1, 3).map(c => `${c.condition} (${c.confidence}% confidence)`).join(', ')}.\n\n`;
+    }
     
     if (matchingFormulas.length > 0) {
-      response += `I can suggest the following formulas that might help:\n\n`;
+      response += `Here are some formulas that might help with ${topCondition.condition}:\n\n`;
       
       matchingFormulas.forEach(formula => {
         response += `• **${formula.name}**: ${formula.description}\n`;
         response += `  Key components: ${formula.components.join(', ')}\n`;
-        response += `  Research basis: ${formula.researchBasis}\n\n`;
+        response += `  Effectiveness rating: ${formula.effectiveness}%\n\n`;
       });
       
-      response += `Please consult with a healthcare professional before trying any new treatment. Would you like more information about any of these formulas?`;
+      response += `Please consult with a healthcare professional before trying any new treatment. Would you like more detailed information about any of these formulas?`;
     } else {
-      response += `I don't have a specific formula recommendation for these symptoms in my database. I recommend consulting with a healthcare professional for proper diagnosis and treatment.`;
+      response += `I don't have a specific formula recommendation for ${topCondition.condition} in my database. I recommend consulting with a healthcare professional for proper diagnosis and treatment.`;
     }
     
-    return response;
+    return { response, detectedDiseaseIds };
   };
 
   const handleSendMessage = () => {
@@ -122,32 +123,41 @@ const ChatInterface = () => {
     setIsTyping(true);
     
     // Analyze symptoms and generate response
-    const aiResponse = analyzeSymptoms(inputMessage);
+    const analysis = analyzeSymptoms(inputMessage);
     
     // Simulate AI response after a delay
     setTimeout(() => {
       const aiResponseMessage: ChatMessage = {
         id: messages.length + 2,
         role: 'ai' as ChatRole,
-        content: aiResponse
+        content: analysis.response
       };
       
       setMessages(prev => [...prev, aiResponseMessage]);
       setIsTyping(false);
+      setDetectedDiseases(analysis.detectedDiseaseIds);
       
       // Show toast notification
       toast({
         title: "Analysis Complete",
-        description: "Our AI has analyzed your symptoms and provided recommendations.",
+        description: "Our AI has analyzed your symptoms and provided personalized recommendations.",
       });
     }, 1500);
+  };
+
+  // Handle key press (Enter to send, Shift+Enter for new line)
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
     <Card className="border-health-100 shadow-lg overflow-hidden rounded-xl bg-white">
       <CardContent className="p-0">
         <div className="bg-gradient-to-r from-health-600 to-remedy-500 p-4 flex items-center gap-2 border-b border-health-100">
-          <Stethoscope className="h-5 w-5 text-white" />
+          <BrainCircuit className="h-5 w-5 text-white" />
           <h3 className="font-medium text-white">AI Health Assistant</h3>
         </div>
         
@@ -197,12 +207,7 @@ const ChatInterface = () => {
               placeholder="Describe your symptoms in detail (e.g., I've been experiencing headaches, feeling dizzy, and have had some nosebleeds recently...)"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
+              onKeyDown={handleKeyPress}
               className="border-health-200 focus:ring-health-500 min-h-[80px] resize-none rounded-lg"
             />
             <div className="flex justify-between items-center">

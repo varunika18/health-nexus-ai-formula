@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lightbulb, BookOpen, ArrowRight } from 'lucide-react';
+import { Lightbulb, BookOpen, ArrowRight, Stars } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 interface FormulaProps {
@@ -42,9 +42,16 @@ const FormulaRecommendation = ({
             <span className="font-semibold text-sm text-remedy-800">{effectiveness}%</span>
           </div>
           <Progress value={effectiveness} className="h-2 bg-remedy-100">
-            <div className="bg-gradient-to-r from-remedy-300 to-remedy-500"></div>
+            <div className={`bg-gradient-to-r ${
+              effectiveness > 80 ? 'from-green-400 to-green-500' :
+              effectiveness > 60 ? 'from-remedy-300 to-remedy-500' :
+              'from-amber-300 to-amber-500'
+            }`}></div>
           </Progress>
-          <p className="text-xs text-muted-foreground mt-1">Based on research and AI analysis</p>
+          <div className="flex items-center mt-1">
+            <Stars className="h-3 w-3 text-yellow-500 mr-1" />
+            <p className="text-xs text-muted-foreground">Based on research and AI analysis</p>
+          </div>
         </div>
         
         <div className="space-y-3">
