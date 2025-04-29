@@ -22,7 +22,7 @@ const FormulaRecommendation = ({
   researchBasis 
 }: FormulaProps) => {
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-remedy-200 bg-gradient-to-br from-white to-remedy-50">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-remedy-200 bg-gradient-to-br from-white to-remedy-50 h-full">
       <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
         <div className="bg-gradient-to-br from-remedy-300 to-transparent rounded-full w-full h-full transform translate-x-1/3 -translate-y-1/3" />
       </div>
@@ -30,7 +30,7 @@ const FormulaRecommendation = ({
         <div className="flex items-start">
           <Lightbulb className="h-5 w-5 text-remedy-500 mt-1 mr-2 shrink-0" />
           <div>
-            <CardTitle className="text-xl text-remedy-800">{name}</CardTitle>
+            <CardTitle className="text-xl text-remedy-800 font-bold">{name}</CardTitle>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         </div>
@@ -60,7 +60,7 @@ const FormulaRecommendation = ({
             <h4 className="text-xs uppercase font-semibold text-remedy-700 mb-1">Key Components</h4>
             <div className="flex flex-wrap gap-1">
               {components.map((component, index) => (
-                <Badge key={index} variant="outline" className="bg-white text-remedy-700 border-remedy-200">
+                <Badge key={index} variant="outline" className="bg-white/80 text-remedy-700 border-remedy-200 hover:bg-remedy-50 transition-colors">
                   {component}
                 </Badge>
               ))}
@@ -68,8 +68,8 @@ const FormulaRecommendation = ({
           </div>
         </div>
         
-        <Button variant="ghost" size="sm" className="text-remedy-600 hover:text-remedy-800 hover:bg-remedy-100 w-full mt-2 flex items-center justify-center gap-1">
-          Learn More <ArrowRight className="h-3 w-3" />
+        <Button variant="ghost" size="sm" className="text-remedy-600 hover:text-remedy-800 hover:bg-remedy-100 w-full mt-2 flex items-center justify-center gap-1 group">
+          Learn More <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
         </Button>
       </CardContent>
     </Card>

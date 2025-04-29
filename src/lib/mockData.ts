@@ -21,6 +21,20 @@ export const diseases = [
     description: "Infection affecting the respiratory tract including nose, throat and lungs.",
     symptoms: ["Cough", "Sore throat", "Runny nose", "Fever", "Body aches"],
     causes: ["Viral infection", "Bacterial infection", "Allergens", "Environmental pollutants"]
+  },
+  {
+    id: 4,
+    name: "Arthritis",
+    description: "Inflammation of one or more joints, causing pain and stiffness.",
+    symptoms: ["Joint pain", "Stiffness", "Swelling", "Decreased range of motion", "Redness"],
+    causes: ["Age", "Joint injury", "Autoimmune disorders", "Genetic factors", "Obesity"]
+  },
+  {
+    id: 5,
+    name: "Gastroesophageal Reflux Disease (GERD)",
+    description: "A digestive disorder that affects the lower esophageal sphincter.",
+    symptoms: ["Heartburn", "Acid reflux", "Chest pain", "Difficulty swallowing", "Chronic cough"],
+    causes: ["Hiatal hernia", "Obesity", "Pregnancy", "Smoking", "Certain foods"]
   }
 ];
 
@@ -52,6 +66,42 @@ export const formulas = [
     description: "Supports immune function and respiratory health during infections.",
     effectiveness: 78,
     researchBasis: "Studies suggest these components may reduce duration and severity of respiratory symptoms."
+  },
+  {
+    id: 4,
+    diseaseId: 4,
+    name: "Joint Comfort Formula",
+    components: ["Turmeric extract", "Boswellia serrata", "MSM", "Collagen", "Ginger root"],
+    description: "Arthritis support formula that helps reduce inflammation and joint discomfort.",
+    effectiveness: 80,
+    researchBasis: "Multiple studies show these natural anti-inflammatory compounds may help reduce joint pain and stiffness."
+  },
+  {
+    id: 5,
+    diseaseId: 5,
+    name: "Digestive Harmony Blend",
+    components: ["Deglycyrrhizinated licorice", "Aloe vera extract", "Slippery elm", "Marshmallow root", "Chamomile"],
+    description: "Gastric issues support formula that soothes digestive discomfort.",
+    effectiveness: 77,
+    researchBasis: "Traditional use and clinical studies support these herbs for soothing irritated digestive tissue."
+  },
+  {
+    id: 6,
+    diseaseId: 1,
+    name: "Advanced Blood Pressure Support",
+    components: ["Olive leaf extract", "CoQ10", "L-arginine", "Beetroot extract", "Fish oil"],
+    description: "A comprehensive formula targeting multiple pathways for blood pressure support.",
+    effectiveness: 85,
+    researchBasis: "Recent research highlights these components' effects on vascular health and blood pressure regulation."
+  },
+  {
+    id: 7,
+    diseaseId: 2,
+    name: "Metabolic Balance Formula",
+    components: ["Berberine HCL", "Banaba leaf extract", "Fenugreek", "Milk thistle", "Green tea extract"],
+    description: "Supports metabolic health and balanced blood sugar levels.",
+    effectiveness: 79,
+    researchBasis: "Clinical trials show these botanicals may help improve insulin sensitivity and glucose metabolism."
   }
 ];
 

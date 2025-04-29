@@ -10,7 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 
 const ChatInterface = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>(sampleChat);
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    // Fix the type issue by explicitly casting the sample chat data to ChatMessage[]
+    sampleChat.map(msg => ({
+      ...msg,
+      role: msg.role as ChatRole
+    }))
+  );
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -51,6 +57,20 @@ const ChatInterface = () => {
         lowerCaseSymptoms.includes('fever') ||
         lowerCaseSymptoms.includes('aches')) {
       possibleConditions.push('respiratory infection');
+    }
+    
+    if (lowerCaseSymptoms.includes('joint pain') ||
+        lowerCaseSymptoms.includes('stiffness') ||
+        lowerCaseSymptoms.includes('swelling') ||
+        lowerCaseSymptoms.includes('inflammation')) {
+      possibleConditions.push('arthritis');
+    }
+    
+    if (lowerCaseSymptoms.includes('acid reflux') ||
+        lowerCaseSymptoms.includes('heartburn') ||
+        lowerCaseSymptoms.includes('indigestion') ||
+        lowerCaseSymptoms.includes('stomach pain')) {
+      possibleConditions.push('gastric issues');
     }
     
     // If no conditions matched, provide a general response
@@ -124,7 +144,7 @@ const ChatInterface = () => {
   };
 
   return (
-    <Card className="border-health-100 shadow-lg overflow-hidden rounded-xl">
+    <Card className="border-health-100 shadow-lg overflow-hidden rounded-xl bg-white">
       <CardContent className="p-0">
         <div className="bg-gradient-to-r from-health-600 to-remedy-500 p-4 flex items-center gap-2 border-b border-health-100">
           <Stethoscope className="h-5 w-5 text-white" />
@@ -171,7 +191,7 @@ const ChatInterface = () => {
           <div ref={messagesEndRef} />
         </div>
         
-        <div className="border-t border-health-100 p-3 bg-white">
+        <div className="border-t border-health-100 p-4 bg-white">
           <div className="flex flex-col gap-2">
             <Textarea
               placeholder="Describe your symptoms in detail (e.g., I've been experiencing headaches, feeling dizzy, and have had some nosebleeds recently...)"
