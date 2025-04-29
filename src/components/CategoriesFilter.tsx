@@ -7,12 +7,14 @@ interface CategoriesFilterProps {
   categories: string[];
   activeCategory: string | null;
   onSelectCategory: (category: string | null) => void;
+  searchResults?: number;
 }
 
 export const CategoriesFilter: React.FC<CategoriesFilterProps> = ({ 
   categories, 
   activeCategory, 
-  onSelectCategory 
+  onSelectCategory,
+  searchResults
 }) => {
   return (
     <div className="space-y-3">
@@ -37,6 +39,12 @@ export const CategoriesFilter: React.FC<CategoriesFilterProps> = ({
       {activeCategory && (
         <p className="text-xs text-muted-foreground">
           Showing formulas for <span className="font-medium text-remedy-600">{activeCategory}</span>
+        </p>
+      )}
+      
+      {searchResults !== undefined && searchResults >= 0 && (
+        <p className="text-xs text-muted-foreground mt-2">
+          Found <span className="font-medium text-remedy-600">{searchResults}</span> matching results
         </p>
       )}
     </div>

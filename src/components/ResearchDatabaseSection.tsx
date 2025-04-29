@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -63,24 +63,67 @@ const researchPapers = [
 export const ResearchDatabaseSection: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<typeof researchPapers>([]);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   
   // Get all unique keywords
   const allKeywords = Array.from(new Set(
     researchPapers.flatMap(paper => paper.keywords)
   )).sort();
   
+  // Generate search suggestions based on current input
+  useEffect(() => {
+    if (searchTerm.length > 1) {
+      const allTerms = new Set<string>();
+      
+      // Add titles to suggestions
+      researchPapers.forEach(paper => {
+        const words = paper.title.toLowerCase().split(' ');
+        words.forEach(word => {
+          if (word.length > 3 && word.toLowerCase().includes(searchTerm.toLowerCase())) {
+            allTerms.add(word);
+          }
+        });
+        
+        // Add keywords to suggestions
+        paper.keywords.forEach(keyword => {
+          if (keyword.toLowerCase().includes(searchTerm.toLowerCase())) {
+            allTerms.add(keyword);
+          }
+        });
+        
+        // Add author names to suggestions
+        paper.authors.forEach(author => {
+          if (author.toLowerCase().includes(searchTerm.toLowerCase())) {
+            allTerms.add(author.replace(',', ''));
+          }
+        });
+      });
+      
+      setSearchSuggestions(Array.from(allTerms).slice(0, 5));
+      setShowSearchSuggestions(true);
+    } else {
+      setShowSearchSuggestions(false);
+    }
+  }, [searchTerm]);
+  
   // Filter research papers based on search term and selected keywords
-  const filteredPapers = researchPapers.filter(paper => {
-    const matchesSearch = searchTerm === '' || 
-      paper.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      paper.abstract.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      paper.authors.some(author => author.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-    const matchesKeywords = selectedKeywords.length === 0 ||
-      selectedKeywords.every(keyword => paper.keywords.includes(keyword));
-      
-    return matchesSearch && matchesKeywords;
-  });
+  useEffect(() => {
+    const filteredPapers = researchPapers.filter(paper => {
+      const matchesSearch = searchTerm === '' || 
+        paper.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        paper.abstract.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        paper.authors.some(author => author.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+      const matchesKeywords = selectedKeywords.length === 0 ||
+        selectedKeywords.every(keyword => paper.keywords.includes(keyword));
+        
+      return matchesSearch && matchesKeywords;
+    });
+    
+    setSearchResults(filteredPapers);
+  }, [searchTerm, selectedKeywords]);
   
   const toggleKeyword = (keyword: string) => {
     setSelectedKeywords(prev => 
@@ -88,6 +131,11 @@ export const ResearchDatabaseSection: React.FC = () => {
         ? prev.filter(k => k !== keyword)
         : [...prev, keyword]
     );
+  };
+  
+  const handleSearchSuggestionClick = (suggestion: string) => {
+    setSearchTerm(suggestion);
+    setShowSearchSuggestions(false);
   };
   
   return (
@@ -144,12 +192,32 @@ export const ResearchDatabaseSection: React.FC = () => {
               className="pl-10 border-health-200 rounded-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => searchTerm.length > 1 && setShowSearchSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
             />
+            
+            {/* Search suggestions */}
+            {showSearchSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border border-health-100 animate-fade-in">
+                <ul className="py-1">
+                  {searchSuggestions.map((suggestion, index) => (
+                    <li 
+                      key={index}
+                      className="px-4 py-2 text-sm hover:bg-health-50 cursor-pointer flex items-center"
+                      onClick={() => handleSearchSuggestionClick(suggestion)}
+                    >
+                      <Search className="h-3 w-3 mr-2 text-health-500" />
+                      <span>{suggestion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           
           <div className="space-y-4">
-            {filteredPapers.length > 0 ? (
-              filteredPapers.map(paper => (
+            {searchResults.length > 0 ? (
+              searchResults.map(paper => (
                 <Card key={paper.id} className="hover:shadow-md transition-all border-health-200">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start gap-4">
