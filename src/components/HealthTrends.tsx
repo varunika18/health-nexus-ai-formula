@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartLine, Info, TrendingUp } from 'lucide-react';
+import { ChartLine, Info } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -17,11 +17,10 @@ import { healthTrends } from '@/lib/mockData';
 const HealthTrends = () => {
   const regions = healthTrends.map(region => region.region);
   const [activeRegion, setActiveRegion] = useState(regions[0]);
-  const [showDetail, setShowDetail] = useState(false);
   
+  // Get chart data for the selected region
   const getChartData = (regionName: string) => {
     const region = healthTrends.find(r => r.region === regionName);
-    
     if (!region) return [];
     
     return region.topConditions.map((condition, index) => ({
@@ -30,11 +29,7 @@ const HealthTrends = () => {
     }));
   };
 
-  const handleRegionChange = (region: string) => {
-    setActiveRegion(region);
-    setShowDetail(true);
-  };
-
+  // Get insights for the selected region
   const getRegionalInsights = (regionName: string) => {
     const region = healthTrends.find(r => r.region === regionName);
     if (!region) return null;
@@ -42,7 +37,7 @@ const HealthTrends = () => {
     return {
       topTrend: region.topConditions[0],
       prevalence: region.prevalence[0],
-      growth: 'Increasing', // Setting default value since it's not in the type
+      growth: 'Increasing',
       recommendations: [
         `Increase awareness about ${region.topConditions[0]} prevention`,
         `Screen for early signs of ${region.topConditions[1]}`,
@@ -54,7 +49,7 @@ const HealthTrends = () => {
   const insights = getRegionalInsights(activeRegion);
 
   return (
-    <Card className="border-health-100 shadow-md overflow-hidden">
+    <Card className="border-health-100 shadow-md">
       <CardHeader className="pb-2 bg-gradient-to-r from-health-50 to-white border-b border-health-100">
         <div className="flex items-center gap-2">
           <ChartLine className="h-5 w-5 text-health-600" />
@@ -62,7 +57,7 @@ const HealthTrends = () => {
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <Tabs defaultValue={regions[0]} className="w-full" onValueChange={handleRegionChange}>
+        <Tabs defaultValue={regions[0]} className="w-full" onValueChange={setActiveRegion}>
           <TabsList className="w-full grid grid-cols-2 md:grid-cols-4">
             {regions.map(region => (
               <TabsTrigger 
@@ -110,10 +105,9 @@ const HealthTrends = () => {
                 </ResponsiveContainer>
               </div>
               
-              {showDetail && region === activeRegion && insights && (
-                <div className="mt-6 p-4 bg-health-50 rounded-lg animate-fade-in border border-health-100">
-                  <h4 className="text-md font-medium text-health-800 mb-2 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-health-600" />
+              {insights && region === activeRegion && (
+                <div className="mt-6 p-4 bg-health-50 rounded-lg border border-health-100">
+                  <h4 className="text-md font-medium text-health-800 mb-2">
                     Key Insights for {activeRegion}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
